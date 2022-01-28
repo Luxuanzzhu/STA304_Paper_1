@@ -2,8 +2,7 @@
 title: "My title"
 subtitle: "My subtitle if needed"
 author: 
-  - First author
-  - Another author
+  - Luxuan Zhu
 thanks: "Code and data are available at: LINK."
 date: "`r format(Sys.time(), '%d %B %Y')`"
 abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
@@ -16,31 +15,64 @@ bibliography: references.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(opendatatoronto)
+library(dplyr)
 library(tidyverse)
-library(palmerpenguins)
+library(ggplot2)
+library(ggmap)
+library(mapproj)
+library(maps)
+library(knitr)
 ```
 
-# Introduction
+# Introduction (talk about dataset, findings, and conclusion)
+
+# 1st paragraph: motivation and broad
+# 2nd paragraph: what I did and findings
+# 3 paragraph: implications
 
 You can and should cross-reference sections and sub-sections. For instance, Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
 
+Fire incidents occur everyday around the world. In most societies, these incidents are a source of threat to safety, capital, buildings, and societal development. They occur in different locations, with different causes, and result in damages to different extends. 
 
+This paper provides an in-depth analysis on the fire incidents occurred in cooking areas or kitchens located in Toronto, ON. Specifically, the author is interested in exploring the differences in estimated money loss as a result of the fire incidents, categorized by whether the fire alarm system was operated. The author's hypothesis is that fire incidents where the fire alarm system did not operate or did not exist would result in higher estimated dollar loss compared to those where the fire alarm system operated. Such a hypothesis 
 
-# Data
+The author found that...
 
-Our data is of penguins (Figure \@ref(fig:bills)).
+The remainder of the paper will follow the structure of: Section \@ref(data) explains the data; Section \@ref(Model) showcases the models to support the analysis; Section \@ref(Results) covers the results of the models; Section...
 
-```{r bills, fig.cap="Bills of penguins", echo = FALSE}
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+# Data (generate a table and talk about the variables)
+
+The dataset is obtained from Open Data Toronto [@citeopendatatoronto] using R [@citeR]. The dataset provides information on 17536 fire incidents to which Toronto Fire responds in more detail, as displayed by the 43 variables including Area of Origin, Extend of Fire, and Estimated Dollar Loss. The dataset includes only fire incidents defined by the Ontario Fire Marshal, which means it does not capture all fire incidents in Toronto. Since the fire incidents recorded are actual events related to citizens of Toronto and the society as a whole, personal information is not provided and the exact address have been approximated to the nearest intersections for privacy purposes. Moreover, the dataset follows exemptions under Section 8 of Municipal Freedom of Information and Protection of Privacy Act (MFIPPA) and excludes certain incidents.
+
+For the purpose of the paper, the analysis will focus on the fire incidents occurred in cooking areas or kitchens. Moreover, the author is interested in exploring the relationship between the estimated dollar loss and the fire alarm system operation among the selected kitchen fire incidents. To do so, the author uses Tidyverse [@citetidyverse] to select the variables of "Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", and "Estimated Dollar Loss". The author also removes all entrants with missing values for any of the variables. The following shows an extract of the cleaned dataset (Table \@ref(tab:dataextract))
+
+The first variable, Area of Origin, shows the initial cause of the fire incidents. In the context of this paper, all observations should contain the Area of Origin of "24 - Cooking Area or Kitchen". The second variable of Fire Alarm System Operation shows the status of the fire alarm system during the fire incident. The four statuses include: Fire alarm system operated; Fire alarm system did not operate; not applicable (no system); and Fire alarm system operation undetermined. The next two variables, longitude and latitude, are used in mapping the locations of the fire incidents. Lastly, the Estimated Dollar Loss showcases the financial consequences of each fire incident. 
+
+```{r dataextract}
+fire_incidents <-
+  read.csv(file = "inputs/data/fire_incidents.csv")
+
+cleaned_data <-
+  fire_incidents %>%
+  select(Area_of_Origin, Fire_Alarm_System_Operation, Latitude, Longitude, Estimated_Dollar_Loss) %>%
+  filter(Area_of_Origin == "24 - Cooking Area or Kitchen") %>%
+  filter(!is.na(Fire_Alarm_System_Operation)) %>%
+  filter(!is.na(Latitude)) %>%
+  filter(!is.na(Longitude)) %>%
+  filter(!is.na(Estimated_Dollar_Loss))
+
+data_extract <-
+  cleaned_data %>% 
+    slice(1:10) %>%
+      kable(
+      caption = "First ten rows of a dataset of fire incidents in Toronto",
+      col.names = c("Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", "Estimated Dollar Loss"),
+      digits = 1,
+      booktabs = TRUE, 
+      linesep = ""
+    )
 ```
-
-Talk more about it.
 
 Also bills and their average (Figure \@ref(fig:billssssss)). (Notice how you can change the height and width so they don't take the whole page?)
 
@@ -103,5 +135,3 @@ Weaknesses and next steps should also be included.
 
 
 # References
-
-
