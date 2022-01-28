@@ -15,6 +15,9 @@ bibliography: references.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+install.packages("ggmap")
+install.packages("mapproj")
+
 library(opendatatoronto)
 library(dplyr)
 library(tidyverse)
@@ -45,13 +48,13 @@ The remainder of the paper will follow the structure of: Section \@ref(data) exp
 
 The dataset is obtained from Open Data Toronto [@citeopendatatoronto] using R [@citeR]. The dataset provides information on 17536 fire incidents to which Toronto Fire responds in more detail, as displayed by the 43 variables including Area of Origin, Extend of Fire, and Estimated Dollar Loss. The dataset includes only fire incidents defined by the Ontario Fire Marshal, which means it does not capture all fire incidents in Toronto. Since the fire incidents recorded are actual events related to citizens of Toronto and the society as a whole, personal information is not provided and the exact address have been approximated to the nearest intersections for privacy purposes. Moreover, the dataset follows exemptions under Section 8 of Municipal Freedom of Information and Protection of Privacy Act (MFIPPA) and excludes certain incidents.
 
-For the purpose of the paper, the analysis will focus on the fire incidents occurred in cooking areas or kitchens. Moreover, the author is interested in exploring the relationship between the estimated dollar loss and the fire alarm system operation among the selected kitchen fire incidents. To do so, the author uses Tidyverse [@citetidyverse] to select the variables of "Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", and "Estimated Dollar Loss". The author also removes all entrants with missing values for any of the variables. The following shows an extract of the cleaned dataset (Table \@ref(tab:dataextract))
+For the purpose of the paper, the analysis will focus on the fire incidents occurred in cooking areas or kitchens. Moreover, the author is interested in exploring the relationship between the estimated dollar loss and the fire alarm system operation among the selected kitchen fire incidents. To do so, the author uses Tidyverse [@citetidyverse] to select the variables of "Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", and "Estimated Dollar Loss". The author also removes all entrants with missing values for any of the variables. The following shows an extract of the cleaned dataset (Table \@ref(tab:dataextract)).
 
 The first variable, Area of Origin, shows the initial cause of the fire incidents. In the context of this paper, all observations should contain the Area of Origin of "24 - Cooking Area or Kitchen". The second variable of Fire Alarm System Operation shows the status of the fire alarm system during the fire incident. The four statuses include: Fire alarm system operated; Fire alarm system did not operate; not applicable (no system); and Fire alarm system operation undetermined. The next two variables, longitude and latitude, are used in mapping the locations of the fire incidents. Lastly, the Estimated Dollar Loss showcases the financial consequences of each fire incident. 
 
 ```{r dataextract}
 fire_incidents <-
-  read.csv(file = "inputs/data/fire_incidents.csv")
+  read_csv("~/Session1/STA304_Paper_1/inputs/data/fire_incidents.csv")
 
 cleaned_data <-
   fire_incidents %>%

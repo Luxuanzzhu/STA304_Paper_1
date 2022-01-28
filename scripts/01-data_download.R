@@ -28,5 +28,5 @@ fire_incidents <- filter(datastore_resources, row_number()==1) %>% get_resource(
 
 #### Save Dataset ####
 
-write.csv(fire_incidents, "inputs/data/fire_incidents.csv")
+write_csv(fire_incidents, "inputs/data/fire_incidents.csv")
 
