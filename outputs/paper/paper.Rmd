@@ -125,14 +125,28 @@ final_map
 # Scatterplot
 
 ```{r}
-final_graph <- 
-  ggplot(cleaned_data, aes(Estimated_Dollar_Loss)) +
-  facet_wrap(~Building_Status) +
-  geom_histogram(binwidth = 10) +
+final_graph1 <- 
+  cleaned_data %>%
+  filter(Fire_Alarm_System_Operation == "1 - Fire alarm system operated") %>%
+  ggplot(mapping = aes(x = Estimated_Dollar_Loss)) +
+  geom_histogram(bins = 100) +
+  xlim(0, 250000) +
+  ylim(0, 250) +
   labs(x = "Estimated Dollar Loss",
        y = "Count")
 
-final_graph
+final_graph2 <- 
+  cleaned_data %>%
+  filter(Fire_Alarm_System_Operation != "1 - Fire alarm system operated") %>%
+  ggplot(mapping = aes(x = Estimated_Dollar_Loss)) +
+  geom_histogram(bins = 100) +
+  xlim(0, 250000) +
+  ylim(0, 250) +
+  labs(x = "Estimated Dollar Loss",
+       y = "Count")
+
+final_graph1
+final_graph2
 ```
 
 
