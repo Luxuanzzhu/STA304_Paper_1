@@ -34,8 +34,6 @@ library(knitr)
 # 2nd paragraph: what I did and findings
 # 3 paragraph: implications
 
-You can and should cross-reference sections and sub-sections. For instance, Section \@ref(data). R Markdown automatically makes the sections lower case and adds a dash to spaces to generate labels, for instance, Section \@ref(first-discussion-point). 
-
 Fire incidents occur everyday around the world. In most societies, these incidents are a source of threat to safety, capital, buildings, and societal development. They occur in different locations, with different causes, and result in damages to different extends. 
 
 This paper provides an in-depth analysis on the fire incidents occurred in cooking areas or kitchens located in Toronto, ON. Specifically, the author is interested in exploring the differences in estimated money loss as a result of the fire incidents, categorized by whether the fire alarm system was operated. The author's hypothesis is that fire incidents where the fire alarm system did not operate or did not exist would result in higher estimated dollar loss compared to those where the fire alarm system operated. Such a hypothesis 
@@ -77,36 +75,8 @@ data_extract <-
     )
 ```
 
-Also bills and their average (Figure \@ref(fig:billssssss)). (Notice how you can change the height and width so they don't take the whole page?)
-
-```{r billssssss, fig.cap="More bills of penguins", echo = FALSE, fig.width=8, fig.height=4}
-
-# This needs to be about the random data tha tI sasmpled?
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = FALSE) +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
-```
-
-Talk way more about it. 
-
-
 
 # Model
-
-\begin{equation}
-Pr(\theta | y) = \frac{Pr(y | \theta) Pr(\theta)}{Pr(y)}  (\#eq:bayes)
-\end{equation}
-
-Equation \@ref(eq:bayes) seems useful, eh?
-
-Here's a dumb example of how to use some references: In paper we run our analysis in `R` [@citeR]. We also use the `tidyverse` which was written by @thereferencecanbewhatever If we were interested in baseball data then @citeLahman could be useful. 
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
 
 # Results
 
