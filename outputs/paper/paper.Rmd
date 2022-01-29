@@ -34,7 +34,7 @@ library(knitr)
 # 2nd paragraph: what I did and findings
 # 3 paragraph: implications
 
-Fire incidents occur everyday around the world. In most societies, these incidents are a source of threat to safety, capital, buildings, and societal development. They occur in different locations, with different causes, and result in damages to different extends. 
+Fire incidents occur everyday around the world. In most societies, these incidents are a source of threat to safety, capital, buildings, and societal development. They occur in different locations, with different causes, and result in damages to different extends. To further understand the causes of unintentional house fires, Turner and her peers conducted literature research and found that demographic factors such as age, gender, and socio-economic status can contribute to fire incidents. Moreover, social factors such as household composition, property characteristics, and fire safety practices can potentially cause house fires. An important observation from the study is that older and disabled residents are more likely to suffer an injury or fatality in the event of a fire, while they are less likely to ignite the fire in the first place. [@risk_factor] Therefore, It is important for a society to look at the characteristics across fire incidents and further prevent future events, especially to protect those who are more in need for help and support. 
 
 This paper provides an in-depth analysis on the fire incidents occurred in cooking areas or kitchens located in Toronto, ON. Specifically, the author is interested in exploring the differences in estimated money loss as a result of the fire incidents, categorized by whether the fire alarm system was operated. The author's hypothesis is that fire incidents where the fire alarm system did not operate or did not exist would result in higher estimated dollar loss compared to those where the fire alarm system operated. Such a hypothesis 
 
@@ -56,11 +56,12 @@ fire_incidents <-
 
 cleaned_data <-
   fire_incidents %>%
-  select(Area_of_Origin, Fire_Alarm_System_Operation, Latitude, Longitude, Estimated_Dollar_Loss) %>%
+  select(Area_of_Origin, Fire_Alarm_System_Operation, Extent_Of_Fire, Building_Status, Latitude, Longitude, Estimated_Dollar_Loss) %>%
   filter(Area_of_Origin == "24 - Cooking Area or Kitchen") %>%
   filter(!is.na(Fire_Alarm_System_Operation)) %>%
   filter(!is.na(Latitude)) %>%
   filter(!is.na(Longitude)) %>%
+  filter(!is.na(Extent_Of_Fire)) %>%
   filter(!is.na(Estimated_Dollar_Loss))
 
 data_extract <-
@@ -68,15 +69,72 @@ data_extract <-
     slice(1:10) %>%
       kable(
       caption = "First ten rows of a dataset of fire incidents in Toronto",
-      col.names = c("Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", "Estimated Dollar Loss"),
+      col.names = c("Area of Origin", "Fire Alarm System Operation", "Extent of Fire", "Building Status", "Latitude", "Longitude", "Estimated Dollar Loss"),
       digits = 1,
       booktabs = TRUE, 
       linesep = ""
     )
 ```
 
-
 # Model
+
+# Map
+
+Then, to construct the map, I used ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps]. Specifically, I selected the part of the map where all the observations occurred. To better showcase the characteristics of the data, I colour-coded the data points by the type of fire incident. The final resulting map is shown below.
+
+```{r, echo=FALSE, message=FALSE}
+# Create Map
+
+t <- max(cleaned_data$Latitude)
+b <- min(cleaned_data$Latitude)
+l <- min(cleaned_data$Longitude)
+r <- max(cleaned_data$Longitude)
+bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
+
+area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
+```
+
+```{r, echo=FALSE, message=FALSE}
+map_data <-
+  cleaned_data %>%
+  filter(Extent_Of_Fire == "7 - Spread to other floors, confined to building")
+
+final_map <- 
+  ggmap(area,
+      extent = "normal",
+      maprange = FALSE) +
+  geom_point(data = map_data,
+             aes(x = Longitude,
+                 y = Latitude,
+                 colour = Building_Status),) +
+  scale_color_brewer(name = "Kitchen Fire Incidents by Building Status", palette = "Set1") +
+  coord_map(
+    projection = "mercator",
+    xlim = c(r,l),
+    ylim = c(b,t)
+  ) +
+  labs(x = "Longitude",
+       y = "Latitude") +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+final_map
+```
+
+# Scatterplot
+
+```{r}
+final_graph <- 
+  ggplot(cleaned_data, aes(Estimated_Dollar_Loss)) +
+  facet_wrap(~Building_Status) +
+  geom_histogram(binwidth = 10) +
+  labs(x = "Estimated Dollar Loss",
+       y = "Count")
+
+final_graph
+```
+
 
 # Results
 
