@@ -16,6 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 install.packages("ggmap")
 install.packages("mapproj")
+install.packages("gridExtra")
+install.packages("modelsummary")
+install.packages("svglite", type = "source")
 
 library(opendatatoronto)
 library(dplyr)
@@ -25,6 +28,9 @@ library(ggmap)
 library(mapproj)
 library(maps)
 library(knitr)
+library(gridExtra)
+library(modelsummary)
+library(svglite)
 ```
 
 # Introduction (talk about dataset, findings, and conclusion)
@@ -128,7 +134,17 @@ final_map <-
 final_map
 ```
 
-# Scatterplot
+# Histogram
+
+In addition to a map, the author is also interested seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below.  
+
+```{r}
+cleaned_data %>%
+  filter(Estimated_Dollar_Loss >= 250000) %>%
+  group_by(Fire_Alarm_System_Operation) %>%
+  summarize(n = n())
+```
+
 
 ```{r}
 final_graph1 <- 
@@ -138,8 +154,9 @@ final_graph1 <-
   geom_histogram(bins = 100) +
   xlim(0, 250000) +
   ylim(0, 250) +
-  labs(x = "Estimated Dollar Loss",
-       y = "Count")
+  labs(x = "Estimated dollar loss",
+       y = "# of fire incidents",
+       title = "Estimated Dollar Loss - Fire Incidents \n With Operating Fire Alarm Systems \n (n = 1292)")
 
 final_graph2 <- 
   cleaned_data %>%
@@ -148,11 +165,20 @@ final_graph2 <-
   geom_histogram(bins = 100) +
   xlim(0, 250000) +
   ylim(0, 250) +
-  labs(x = "Estimated Dollar Loss",
-       y = "Count")
+  labs(x = "Estimated dollar loss",
+       y = "# of fire incidents",
+       title = "Estimated Dollar Loss - Fire Incidents \n Without Operating Fire Alarm Systems \n (n = 1548)") 
 
-final_graph1
-final_graph2
+grid.arrange(final_graph1, final_graph2, ncol=2)
+
+graph_data <-
+  cleaned_data %>% 
+    filter(Estimated_Dollar_Loss <= 250000)
+
+graph_data %>% 
+  select(Fire_Alarm_System_Operation) %>%
+  datasummary_skim(type = "categorical")
+
 ```
 
 
