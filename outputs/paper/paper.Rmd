@@ -19,6 +19,7 @@ install.packages("mapproj")
 install.packages("gridExtra")
 install.packages("modelsummary")
 install.packages("svglite", type = "source")
+install.packages("janitor")
 
 library(opendatatoronto)
 library(dplyr)
@@ -31,6 +32,7 @@ library(knitr)
 library(gridExtra)
 library(modelsummary)
 library(svglite)
+library(janitor)
 ```
 
 # Introduction (talk about dataset, findings, and conclusion)
@@ -64,13 +66,10 @@ fire_incidents <-
 
 cleaned_data <-
   fire_incidents %>%
-  select(Area_of_Origin, Fire_Alarm_System_Operation, Extent_Of_Fire, Building_Status, Latitude, Longitude, Estimated_Dollar_Loss) %>%
-  filter(Area_of_Origin == "24 - Cooking Area or Kitchen") %>%
-  filter(!is.na(Fire_Alarm_System_Operation)) %>%
-  filter(!is.na(Latitude)) %>%
-  filter(!is.na(Longitude)) %>%
-  filter(!is.na(Extent_Of_Fire)) %>%
-  filter(!is.na(Estimated_Dollar_Loss))
+  clean_names() %>%
+  select(area_of_origin, fire_alarm_system_operation, extent_of_fire, building_status, latitude, longitude, estimated_dollar_loss) %>%
+  filter(area_of_origin == "24 - Cooking Area or Kitchen") %>%
+  na.omit()
 
 data_extract <-
   cleaned_data %>% 
@@ -86,19 +85,21 @@ data_extract <-
 data_extract
 ```
 
+# Need a paragraph to describe the dataset
+
 # Model
 
 # Map
 
-To gain a visual representation of the distribution of fire incidents within the city of Toronto, the author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Due to the high number of observations, the author chooses to focus on fire incidents that either spread to other floors within the building, spread to the entire structure, or spread to the roof or the exterior of the building. All fire incidents are still initialized in the kitchen area. The justification for such a niche selection is to have the map display the fire incidents that extended beyond its area of origin and caused larger areas of damage. Then, the author plots the data points using colours sorted by the building status of each incident. The possible values are: normal, under rennovation, under construction, and unknown. The final resulting map is shown below.
+To gain a visual representation of the distribution of fire incidents within the city of Toronto, the author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Due to the high number of observations, the author chooses to focus on fire incidents that either spread to other floors within the building, spread to the entire structure, or spread to the roof or the exterior of the building. All fire incidents are still initialized in the kitchen area. The justification for such a niche selection is to have the map display the fire incidents that extended beyond its area of origin and caused larger areas of damage. Then, the author plots the data points using colours sorted by the building status of each incident. The possible values are: normal, under renovation, under construction, and unknown. The final resulting map is shown below.
 
 ```{r, echo=FALSE, message=FALSE}
 # Create Map
 
-t <- max(cleaned_data$Latitude)
-b <- min(cleaned_data$Latitude)
-l <- min(cleaned_data$Longitude)
-r <- max(cleaned_data$Longitude)
+t <- max(cleaned_data$latitude)
+b <- min(cleaned_data$latitude)
+l <- min(cleaned_data$longitude)
+r <- max(cleaned_data$longitude)
 bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
 
 area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
@@ -109,16 +110,16 @@ target = c("7 - Spread to other floors, confined to building", "8 - Entire Struc
 
 map_data <-
   cleaned_data %>%
-  filter(Extent_Of_Fire %in% target)
+  filter(extent_of_fire %in% target)
 
 final_map <- 
   ggmap(area,
       extent = "normal",
       maprange = FALSE) +
   geom_point(data = map_data,
-             aes(x = Longitude,
-                 y = Latitude,
-                 colour = Building_Status),) +
+             aes(x = longitude,
+                 y = latitude,
+                 colour = building_status),) +
   scale_color_brewer(name = "Kitchen Fire Incidents by Building Status", palette = "Set1") +
   coord_map(
     projection = "mercator",
@@ -140,8 +141,8 @@ In addition to a map, the author is also interested seeing the difference betwee
 
 ```{r}
 cleaned_data %>%
-  filter(Estimated_Dollar_Loss >= 250000) %>%
-  group_by(Fire_Alarm_System_Operation) %>%
+  filter(estimated_dollar_loss >= 250000) %>%
+  group_by(fire_alarm_system_operation) %>%
   summarize(n = n())
 ```
 
@@ -149,8 +150,8 @@ cleaned_data %>%
 ```{r}
 final_graph1 <- 
   cleaned_data %>%
-  filter(Fire_Alarm_System_Operation == "1 - Fire alarm system operated") %>%
-  ggplot(mapping = aes(x = Estimated_Dollar_Loss)) +
+  filter(fire_alarm_system_operation == "1 - Fire alarm system operated") %>%
+  ggplot(mapping = aes(x = estimated_dollar_loss)) +
   geom_histogram(bins = 100) +
   xlim(0, 250000) +
   ylim(0, 250) +
@@ -160,8 +161,8 @@ final_graph1 <-
 
 final_graph2 <- 
   cleaned_data %>%
-  filter(Fire_Alarm_System_Operation != "1 - Fire alarm system operated") %>%
-  ggplot(mapping = aes(x = Estimated_Dollar_Loss)) +
+  filter(fire_alarm_system_operation != "1 - Fire alarm system operated") %>%
+  ggplot(mapping = aes(x = estimated_dollar_loss)) +
   geom_histogram(bins = 100) +
   xlim(0, 250000) +
   ylim(0, 250) +
@@ -173,10 +174,10 @@ grid.arrange(final_graph1, final_graph2, ncol=2)
 
 graph_data <-
   cleaned_data %>% 
-    filter(Estimated_Dollar_Loss <= 250000)
+    filter(estimated_dollar_loss <= 250000)
 
 graph_data %>% 
-  select(Fire_Alarm_System_Operation) %>%
+  select(fire_alarm_system_operation) %>%
   datasummary_skim(type = "categorical")
 
 ```
