@@ -185,16 +185,6 @@ graph_data %>%
 
 # Results
 
-# Discussion
-
-## First discussion point
-
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
-
-## Second discussion point
-
-## Third discussion point
-
 ## Weaknesses and next steps
 
 Weaknesses and next steps should also be included.
