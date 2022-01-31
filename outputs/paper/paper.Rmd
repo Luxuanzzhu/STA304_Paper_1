@@ -6,12 +6,13 @@ author:
 thanks: "Code and data are available at: LINK."
 date: "`r format(Sys.time(), '%d %B %Y')`"
 abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
-output: pdf_document
+output:
+  bookdown::pdf_document2
 toc: FALSE
 bibliography: references.bib
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 install.packages("ggmap")
@@ -20,6 +21,7 @@ install.packages("gridExtra")
 install.packages("modelsummary")
 install.packages("svglite", type = "source")
 install.packages("janitor")
+install.packages("kableExtra")
 
 library(opendatatoronto)
 library(dplyr)
@@ -33,6 +35,7 @@ library(gridExtra)
 library(modelsummary)
 library(svglite)
 library(janitor)
+library(kableExtra)
 ```
 
 # Introduction (talk about dataset, findings, and conclusion)
@@ -60,7 +63,7 @@ For the purpose of the paper, the analysis will focus on the fire incidents occu
 
 The first variable, Area of Origin, shows the initial cause of the fire incidents. In the context of this paper, all observations should contain the Area of Origin of "24 - Cooking Area or Kitchen". The second variable of Fire Alarm System Operation shows the status of the fire alarm system during the fire incident. The four statuses include: Fire alarm system operated; Fire alarm system did not operate; not applicable (no system); and Fire alarm system operation undetermined. The next two variables, longitude and latitude, are used in mapping the locations of the fire incidents. Lastly, the Estimated Dollar Loss showcases the financial consequences of each fire incident. 
 
-```{r dataextract}
+```{r dataextract, echo = FALSE, message = FALSE}
 fire_incidents <-
   read_csv("~/Session1/STA304_Paper_1/inputs/data/fire_incidents.csv")
 
@@ -80,7 +83,8 @@ data_extract <-
       digits = 1,
       booktabs = TRUE, 
       linesep = ""
-    )
+    ) %>%
+  kable_styling(font_size = 4)
 
 data_extract
 ```
@@ -91,9 +95,9 @@ data_extract
 
 # Map
 
-To gain a visual representation of the distribution of fire incidents within the city of Toronto, the author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Due to the high number of observations, the author chooses to focus on fire incidents that either spread to other floors within the building, spread to the entire structure, or spread to the roof or the exterior of the building. All fire incidents are still initialized in the kitchen area. The justification for such a niche selection is to have the map display the fire incidents that extended beyond its area of origin and caused larger areas of damage. Then, the author plots the data points using colours sorted by the building status of each incident. The possible values are: normal, under renovation, under construction, and unknown. The final resulting map is shown below.
+To gain a visual representation of the geographical distribution of fire incidents within the city of Toronto, the author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Due to the high number of observations, the author chooses to focus on fire incidents that either spread to other floors within the building, spread to the entire structure, or spread to the roof or the exterior of the building. All fire incidents are still initialized in the kitchen area. The justification for such a niche selection is to have the map display the fire incidents that extended beyond its area of origin and caused larger areas of damage. Then, the author plots the data points using colours sorted by the building status of each incident. The possible values are: normal, under renovation, under construction, and unknown. The final resulting map is shown below (Figure \@ref(fig:map)). 
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo = FALSE, message = FALSE}
 # Create Map
 
 t <- max(cleaned_data$latitude)
@@ -105,7 +109,7 @@ bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
 area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
 ```
 
-```{r, echo=FALSE, message=FALSE}
+```{r map, echo = FALSE, message = FALSE}
 target = c("7 - Spread to other floors, confined to building", "8 - Entire Structure", "9 - Confined to roof/exterior structure")
 
 map_data <-
@@ -135,19 +139,25 @@ final_map <-
 final_map
 ```
 
+One can observe from the map that most severe fire incidents have the building status of normal. It is coherent with the assumption that fire incidents from the kitchen or cooking area are more likely to occur in operating or occupied buildings. In terms of geographical distribution, the fire incidents are spread out in Toronto with no obvious clusters. 
+
 # Histogram
 
-In addition to a map, the author is also interested seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below.  
+In addition to a map, the author is also interested seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below (Table \@ref(tab:outliers)), followed by a summary of the number of fire incidents under each fire alarm system status (Table \@ref(tab:summary_table)), and lastly the resulting histograms (Figure \@ref(fig:histograms)). 
 
-```{r}
-cleaned_data %>%
-  filter(estimated_dollar_loss >= 250000) %>%
-  group_by(fire_alarm_system_operation) %>%
-  summarize(n = n())
+
+```{r summary_table, echo = FALSE, message = FALSE}
+graph_data <-
+  cleaned_data %>% 
+    filter(estimated_dollar_loss <= 250000)
+
+graph_data %>% 
+  select(fire_alarm_system_operation) %>%
+  datasummary_skim(type = "categorical")
 ```
 
 
-```{r}
+```{r histograms, echo = FALSE, message = FALSE, warning = FALSE}
 final_graph1 <- 
   cleaned_data %>%
   filter(fire_alarm_system_operation == "1 - Fire alarm system operated") %>%
@@ -157,7 +167,8 @@ final_graph1 <-
   ylim(0, 250) +
   labs(x = "Estimated dollar loss",
        y = "# of fire incidents",
-       title = "Estimated Dollar Loss - Fire Incidents \n With Operating Fire Alarm Systems \n (n = 1292)")
+       title = "Estimated Dollar Loss - Fire Incidents \n With Operating Fire Alarm Systems \n (n = 1292)") +
+  theme(plot.title = element_text(size=11, hjust = 0.5))
 
 final_graph2 <- 
   cleaned_data %>%
@@ -168,20 +179,37 @@ final_graph2 <-
   ylim(0, 250) +
   labs(x = "Estimated dollar loss",
        y = "# of fire incidents",
-       title = "Estimated Dollar Loss - Fire Incidents \n Without Operating Fire Alarm Systems \n (n = 1548)") 
+       title = "Estimated Dollar Loss - Fire Incidents \n Without Operating Fire Alarm Systems \n (n = 1548)") +
+  theme(plot.title = element_text(size=11, hjust = 0.5))
 
 grid.arrange(final_graph1, final_graph2, ncol=2)
 
-graph_data <-
-  cleaned_data %>% 
-    filter(estimated_dollar_loss <= 250000)
-
-graph_data %>% 
-  select(fire_alarm_system_operation) %>%
-  datasummary_skim(type = "categorical")
-
 ```
 
+From the histograms shown above, one can observe that both fire incidents with or without operating fire alarm systems result in mostly estimated dollar loss below \$25,000. However, when the operating fire alarm system is absent, there are more fire incidents with estimated dollar loss above \$500,000. For instance, around 40 fire incidents without operating fire alarm systems had estimated dollar losses around \$100,000, a few with \$150,000 and \$200,000, compared to a much lower number of fire incidents with operating fire alarm system that had the same amount of estimated dollar loss. One can also observe the same pattern from the outlier summary table. 
+
+```{r outliers, echo = FALSE, message = FALSE}
+outliers <- 
+  cleaned_data %>%
+    filter(estimated_dollar_loss >= 250000) %>%
+    group_by(fire_alarm_system_operation) %>%
+    summarize(n = n())
+
+outliers_sum <-
+  outliers %>% 
+    slice(1:4) %>%
+      kable(
+      caption = "Fire Incidents with Estimated Dollar Loss Exceeding $250,000",
+      col.names = c("Fire Alarm System Operation", "# of Fire Incidents"),
+      digits = 1,
+      booktabs = TRUE, 
+      linesep = ""
+    )
+
+outliers_sum
+```
+
+The outlier summary table shows the number of fire incidents with estimated dollar losses exceeding \$250,000, which are excluded from the histograms. As one may observe, the number of outliers with operating fire alarm systems is much lower than the rest of the three categories. 
 
 # Results
 
