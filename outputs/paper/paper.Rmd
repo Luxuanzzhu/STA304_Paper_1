@@ -91,59 +91,9 @@ data_extract
 
 # Need a paragraph to describe the dataset
 
-# Model
-
-# Map
-
-To gain a visual representation of the geographical distribution of fire incidents within the city of Toronto, the author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Due to the high number of observations, the author chooses to focus on fire incidents that either spread to other floors within the building, spread to the entire structure, or spread to the roof or the exterior of the building. All fire incidents are still initialized in the kitchen area. The justification for such a niche selection is to have the map display the fire incidents that extended beyond its area of origin and caused larger areas of damage. Then, the author plots the data points using colours sorted by the building status of each incident. The possible values are: normal, under renovation, under construction, and unknown. The final resulting map is shown below (Figure \@ref(fig:map)). 
-
-```{r, echo = FALSE, message = FALSE}
-# Create Map
-
-t <- max(cleaned_data$latitude)
-b <- min(cleaned_data$latitude)
-l <- min(cleaned_data$longitude)
-r <- max(cleaned_data$longitude)
-bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
-
-area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
-```
-
-```{r map, echo = FALSE, message = FALSE}
-target = c("7 - Spread to other floors, confined to building", "8 - Entire Structure", "9 - Confined to roof/exterior structure")
-
-map_data <-
-  cleaned_data %>%
-  filter(extent_of_fire %in% target)
-
-final_map <- 
-  ggmap(area,
-      extent = "normal",
-      maprange = FALSE) +
-  geom_point(data = map_data,
-             aes(x = longitude,
-                 y = latitude,
-                 colour = building_status),) +
-  scale_color_brewer(name = "Kitchen Fire Incidents by Building Status", palette = "Set1") +
-  coord_map(
-    projection = "mercator",
-    xlim = c(r,l),
-    ylim = c(b,t)
-  ) +
-  labs(x = "Longitude",
-       y = "Latitude") +
-  theme_minimal() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-
-final_map
-```
-
-One can observe from the map that most severe fire incidents have the building status of normal. It is coherent with the assumption that fire incidents from the kitchen or cooking area are more likely to occur in operating or occupied buildings. In terms of geographical distribution, the fire incidents are spread out in Toronto with no obvious clusters. 
-
 # Histogram
 
-In addition to a map, the author is also interested seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below (Table \@ref(tab:outliers)), followed by a summary of the number of fire incidents under each fire alarm system status (Table \@ref(tab:summary_table)), and lastly the resulting histograms (Figure \@ref(fig:histograms)). 
+From observing the dataset, the author is interested in seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below (Table \@ref(tab:outliers)), followed by a summary of the number of fire incidents under each fire alarm system status (Table \@ref(tab:summary_table)), and lastly the resulting histograms (Figure \@ref(fig:histograms)). 
 
 
 ```{r summary_table, echo = FALSE, message = FALSE}
@@ -186,8 +136,6 @@ grid.arrange(final_graph1, final_graph2, ncol=2)
 
 ```
 
-From the histograms shown above, one can observe that both fire incidents with or without operating fire alarm systems result in mostly estimated dollar loss below \$25,000. However, when the operating fire alarm system is absent, there are more fire incidents with estimated dollar loss above \$500,000. For instance, around 40 fire incidents without operating fire alarm systems had estimated dollar losses around \$100,000, a few with \$150,000 and \$200,000, compared to a much lower number of fire incidents with operating fire alarm system that had the same amount of estimated dollar loss. One can also observe the same pattern from the outlier summary table. 
-
 ```{r outliers, echo = FALSE, message = FALSE}
 outliers <- 
   cleaned_data %>%
@@ -211,11 +159,60 @@ outliers_sum
 
 The outlier summary table shows the number of fire incidents with estimated dollar losses exceeding \$250,000, which are excluded from the histograms. As one may observe, the number of outliers with operating fire alarm systems is much lower than the rest of the three categories. 
 
+```{r, echo = FALSE, message = FALSE}
+# Create Map
+
+t <- max(cleaned_data$latitude)
+b <- min(cleaned_data$latitude)
+l <- min(cleaned_data$longitude)
+r <- max(cleaned_data$longitude)
+bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
+
+area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
+```
+
+
+# Map
+
+To further analyze the outliers, one can create a visual representation of the geographical distribution of these fire incidents with high estimated dollar loss. The author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Besides the location, the author is also interested in seeing the building status of each incident, taking possible values of normal, under renovation, under construction, and unknown. The building status variable is shown via color.
+
+```{r map, echo = FALSE, message = FALSE}
+map_data <-
+  cleaned_data %>%
+  filter(estimated_dollar_loss >= 250000)
+
+final_map <- 
+  ggmap(area,
+      extent = "normal",
+      maprange = FALSE) +
+  geom_point(data = map_data,
+             aes(x = longitude,
+                 y = latitude,
+                 colour = building_status),) +
+  scale_color_brewer(name = "Kitchen Fire Incidents by Building Status", palette = "Set1") +
+  coord_map(
+    projection = "mercator",
+    xlim = c(r,l),
+    ylim = c(b,t)
+  ) +
+  labs(x = "Longitude",
+       y = "Latitude") +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+final_map
+```
+
 # Results
+
+Previously, the author used two histograms to illustrate the distributions of estimated dollar loss between fire incidents with operating fire alarm systems and those without operating fire alarm systems. Moreover, the author explores the geographical distribution of fire incidents with more than \$250,000 of estimated dollar loss within Toronto. From the histograms, one may conclude that both fire incidents with or without operating fire alarm systems result in mostly estimated dollar loss below \$25,000. However, when the operating fire alarm system is absent, there are more fire incidents with estimated dollar loss above \$500,000. For instance, around 40 fire incidents without operating fire alarm systems had estimated dollar losses around \$100,000, a few with \$150,000 and \$200,000, compared to a much lower number of fire incidents with operating fire alarm system that had the same amount of estimated dollar loss. One can also observe the same pattern from the outlier summary table, where most outliers do not have operating fire alarm systems. 
+
+In addition, the geographical distribution of the outliers suggests that most fire incidents with large dollar losses occurred around central to southern part of Toronto, with the building status of "normal". It is coherent with the assumption that fire incidents from the kitchen or cooking area are more likely to occur in operating or occupied buildings.
 
 ## Weaknesses and next steps
 
-Weaknesses and next steps should also be included.
+
 
 \newpage
 
