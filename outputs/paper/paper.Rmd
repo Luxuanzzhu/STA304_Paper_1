@@ -84,7 +84,7 @@ data_extract <-
       booktabs = TRUE, 
       linesep = ""
     ) %>%
-  kable_styling(font_size = 4)
+  kable_styling(font_size = 4, latex_options = "HOLD_position")
 
 data_extract
 ```
@@ -95,7 +95,6 @@ data_extract
 
 From observing the dataset, the author is interested in seeing the difference between the distributions of estimated dollar loss relative to the fire alarm system. The author's hypothesis is that fire incidents where the fire alarm did not operate, was absent, or was undetermined, would contribute to a higher estimated dollar loss. In contrast, fire incidents where the fire alarm system operated would result in faster reactions and thus lower estimated dollar loss. Therefore, to test such a hypothesis, the author creates two histograms with estimated dollar loss on the x-axis and the number of fire incidents on the y-axis. The data input is the same cleaned dataset where the area of origin focuses on cooking area/kitchen. The histogram on the left represents the distribution of estimated dollar loss for fire incidents with operating fire alarm systems, whereas the graph on the right represents the remaining fire incidents where the fire alarm system was either undetermined, absent, or did not operate. To get a closer observation of the distributions, the author excluded the fire incidents with estimated dollar loss higher than \$250,000. The detailed breakdown of the outliers are represented by the table below (Table \@ref(tab:outliers)), followed by a summary of the number of fire incidents under each fire alarm system status (Table \@ref(tab:summary_table)), and lastly the resulting histograms (Figure \@ref(fig:histograms)). 
 
-
 ```{r summary_table, echo = FALSE, message = FALSE}
 graph_data <-
   cleaned_data %>% 
@@ -103,7 +102,8 @@ graph_data <-
 
 graph_data %>% 
   select(fire_alarm_system_operation) %>%
-  datasummary_skim(type = "categorical")
+  datasummary_skim(type = "categorical") %>%
+  kable_styling(latex_options = "HOLD_position")
 ```
 
 
@@ -136,6 +136,7 @@ grid.arrange(final_graph1, final_graph2, ncol=2)
 
 ```
 
+
 ```{r outliers, echo = FALSE, message = FALSE}
 outliers <- 
   cleaned_data %>%
@@ -143,7 +144,7 @@ outliers <-
     group_by(fire_alarm_system_operation) %>%
     summarize(n = n())
 
-outliers_sum <-
+outlier_table <-
   outliers %>% 
     slice(1:4) %>%
       kable(
@@ -152,12 +153,15 @@ outliers_sum <-
       digits = 1,
       booktabs = TRUE, 
       linesep = ""
-    )
+    ) %>%
+  kable_styling(latex_options = "HOLD_position")
 
-outliers_sum
+outlier_table
 ```
 
-The outlier summary table shows the number of fire incidents with estimated dollar losses exceeding \$250,000, which are excluded from the histograms. As one may observe, the number of outliers with operating fire alarm systems is much lower than the rest of the three categories. 
+# Map
+
+To further analyze the outliers, one can create a visual representation of the geographical distribution of these fire incidents with high estimated dollar loss. The author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Besides the location, the author is also interested in seeing the building status of each incident, taking possible values of normal, under renovation, under construction, and unknown. The building status variable is shown via color.
 
 ```{r, echo = FALSE, message = FALSE}
 # Create Map
@@ -170,11 +174,6 @@ bbox <- c(left = -79.637, bottom = 43.587, right = -79.123, top = 43.848)
 
 area <- get_stamenmap(bbox, zoom = 11, maptype = "toner-lite")
 ```
-
-
-# Map
-
-To further analyze the outliers, one can create a visual representation of the geographical distribution of these fire incidents with high estimated dollar loss. The author uses ggmap [@citeggmap], mapproj [@citemapproj], and maps [@citemaps] to construct a map pinpointing the locations of selected data points. Besides the location, the author is also interested in seeing the building status of each incident, taking possible values of normal, under renovation, under construction, and unknown. The building status variable is shown via color.
 
 ```{r map, echo = FALSE, message = FALSE}
 map_data <-
@@ -203,7 +202,6 @@ final_map <-
 
 final_map
 ```
-
 # Results
 
 Previously, the author used two histograms to illustrate the distributions of estimated dollar loss between fire incidents with operating fire alarm systems and those without operating fire alarm systems. Moreover, the author explores the geographical distribution of fire incidents with more than \$250,000 of estimated dollar loss within Toronto. From the histograms, one may conclude that both fire incidents with or without operating fire alarm systems result in mostly estimated dollar loss below \$25,000. However, when the operating fire alarm system is absent, there are more fire incidents with estimated dollar loss above \$500,000. For instance, around 40 fire incidents without operating fire alarm systems had estimated dollar losses around \$100,000, a few with \$150,000 and \$200,000, compared to a much lower number of fire incidents with operating fire alarm system that had the same amount of estimated dollar loss. One can also observe the same pattern from the outlier summary table, where most outliers do not have operating fire alarm systems. 
