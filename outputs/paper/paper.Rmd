@@ -1,11 +1,10 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Fire Incidents in Toronto: the Importance of Operating Fire Alarm System"
 author: 
   - Luxuan Zhu
-thanks: "Code and data are available at: LINK."
+thanks: "Code and data are available at: https://github.com/Luxuanzzhu/STA304_Paper_1"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "This paper explores the fire incidents in Toronto and how the fire alarm system plays a role in the estimated dollar loss of each incident. The author uses tables, histograms, and maps to compare the estimated dollar losses of fire incidents with and without operating fire alarm systems. The author concluded that the fire incidents in Toronto with operating fire alarm systems tend to have lower estimated dollar losses compared to those without operating fire alarm systems. These findings matter because they can be incorporated into future fire incident prevention plans for the city of Toronto."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -38,30 +37,21 @@ library(janitor)
 library(kableExtra)
 ```
 
-# Introduction (talk about dataset, findings, and conclusion)
-
-# 1st paragraph: motivation and broad
-# 2nd paragraph: what I did and findings
-# 3 paragraph: implications
-# precisely discuss the source of data and the bias it brings (ethical, statistical, etc.)
+# Introduction 
 
 Fire incidents occur everyday around the world. In most societies, these incidents are a source of threat to safety, capital, buildings, and societal development. They occur in different locations, with different causes, and result in damages to different extends. To further understand the causes of unintentional house fires, Turner and her peers conducted literature research and found that demographic factors such as age, gender, and socio-economic status can contribute to fire incidents. Moreover, social factors such as household composition, property characteristics, and fire safety practices can potentially cause house fires. An important observation from the study is that older and disabled residents are more likely to suffer an injury or fatality in the event of a fire, while they are less likely to ignite the fire in the first place. [@risk_factor] Therefore, It is important for a society to look at the characteristics across fire incidents and further prevent future events, especially to protect those who are more in need for help and support. 
 
 An inevitable consideration while working with a dataset of real incidents is ethics. One needs to consider who are represented by the dataset and who are excluded. Under ethical considerations, what does it mean to make conclusions and thus influences based on the dataset? Looking at the source of the dataset, one can assume that the dataset does not record all fire incidents in Toronto. For instance, some incidents were excluded due to privacy concerns, while some may simply not be reported. Then, it is important to consider the groups of people influenced by the fire incidents. The dataset does not reflect the demographic of the persons involved, thus each incident may associate with any one person or group, with any demographic information, under any circumstance. Thus, for instance, when a statistician concludes that one type of fire incident is more significant than another type, the same affect may apply to the individuals associated behind the two types of incidents. Does that mean the group of individuals associated with the more severe incident type "deserve" more support? These questions are crucial to people such as statisticians and policy setters who might rely on results derived from the dataset to make certain decisions that would, directly or indirectly, influence the society. 
 
-This paper provides an in-depth analysis on the fire incidents occurred in cooking areas or kitchens located in Toronto, ON. Specifically, the author is interested in exploring the differences in estimated money loss as a result of the fire incidents, categorized by whether the fire alarm system was operated. The author's hypothesis is that fire incidents where the fire alarm system did not operate or did not exist would result in higher estimated dollar loss compared to those where the fire alarm system operated. Such a hypothesis 
-
-The author found that...
+This paper provides an in-depth analysis on the fire incidents occurred in cooking areas or kitchens located in Toronto, ON. Specifically, the author is interested in exploring the differences in estimated money loss as a result of the fire incidents, categorized by whether the fire alarm system was operated. The author's hypothesis is that fire incidents where the fire alarm system did not operate or did not exist would result in higher estimated dollar loss compared to those where the fire alarm system operated. To test the hypothesis, the author uses tables, histograms, and maps to compare the estimated dollar losses of fire incidents with and without operating fire alarm systems. The author concluded that the fire incidents in Toronto with operating fire alarm systems tend to have lower estimated dollar losses compared to those without operating fire alarm systems. To conclude the paper, the author incorporates her findings with existing literature on how to effectively prevent future fire incidents and limitations of this study.
 
 The remainder of the paper will follow the structure of: Section \@ref(data) explains the data; Section \@ref(Model) showcases the models to support the analysis; Section \@ref(Results) covers the results of the models; Section...
 
 # Data (generate a table and talk about the variables)
 
-The dataset is obtained from Open Data Toronto [@citeopendatatoronto] using R [@citeR]. The dataset provides information on 17536 fire incidents to which Toronto Fire responds in more detail, as displayed by the 43 variables including Area of Origin, Extend of Fire, and Estimated Dollar Loss. The dataset includes only fire incidents defined by the Ontario Fire Marshal, which means it does not capture all fire incidents in Toronto. Since the fire incidents recorded are actual events related to citizens of Toronto and the society as a whole, personal information is not provided and the exact address have been approximated to the nearest intersections for privacy purposes. Moreover, the dataset follows exemptions under Section 8 of Municipal Freedom of Information and Protection of Privacy Act (MFIPPA) and excludes certain incidents.
+The dataset is obtained from Open Data Toronto [@citeopendatatoronto] using R [@citeR]. The dataset provides information on 17536 fire incidents to which Toronto Fire responds in more detail, as displayed by the 43 variables including Area of Origin, Extend of Fire, and Estimated Dollar Loss. The time range to which the data was collected is from 2011-01-01 to 2019-07-01. The dataset includes only fire incidents defined by the Ontario Fire Marshal, which means it does not represent but is a close estimate to the population of all fire incidents in Toronto. Since the fire incidents recorded are actual events related to citizens of Toronto and the society as a whole, personal information is not provided and the exact address have been approximated to the nearest intersections for privacy purposes. Moreover, the dataset follows exemptions under Section 8 of Municipal Freedom of Information and Protection of Privacy Act (MFIPPA) and excludes certain incidents.
 
-For the purpose of the paper, the analysis will focus on the fire incidents occurred in cooking areas or kitchens. Moreover, the author is interested in exploring the relationship between the estimated dollar loss and the fire alarm system operation among the selected kitchen fire incidents. To do so, the author uses Tidyverse [@citetidyverse] to select the variables of "Area of Origin", "Fire Alarm System Operation", "Latitude", "Longitude", and "Estimated Dollar Loss". The author also removes all entrants with missing values for any of the variables. The following shows an extract of the cleaned dataset (Table \@ref(tab:dataextract)).
-
-The first variable, Area of Origin, shows the initial cause of the fire incidents. In the context of this paper, all observations should contain the Area of Origin of "24 - Cooking Area or Kitchen". The second variable of Fire Alarm System Operation shows the status of the fire alarm system during the fire incident. The four statuses include: Fire alarm system operated; Fire alarm system did not operate; not applicable (no system); and Fire alarm system operation undetermined. The next two variables, longitude and latitude, are used in mapping the locations of the fire incidents. Lastly, the Estimated Dollar Loss showcases the financial consequences of each fire incident. 
+For the purpose of the paper, the analysis will focus on the fire incidents occurred in cooking areas or kitchens. Moreover, the author is interested in exploring the relationship between the estimated dollar loss and the fire alarm system operation among the selected kitchen fire incidents. To do so, the author uses Tidyverse [@citetidyverse] to select the variables of "Area of Origin", "Fire Alarm System Operation", "Extent of Fire", Latitude", "Longitude", and "Estimated Dollar Loss". The author also removes all entrants with missing values for any of the variables. The following shows an extract of the cleaned dataset (Table \@ref(tab:dataextract)).
 
 ```{r dataextract, echo = FALSE, message = FALSE}
 fire_incidents <-
@@ -89,7 +79,7 @@ data_extract <-
 data_extract
 ```
 
-# Need a paragraph to describe the dataset
+After cleaning the dataset, there are 2870 entries remaining with the 7 selected variables. The first variable, Area of Origin, shows the initial cause of the fire incidents. In the context of this paper, all observations should contain the Area of Origin of "24 - Cooking Area or Kitchen". The second variable of Fire Alarm System Operation shows the status of the fire alarm system during the fire incident. The four statuses include: Fire alarm system operated; Fire alarm system did not operate; not applicable (no system); and Fire alarm system operation undetermined. The next two variables, longitude and latitude, are used in mapping the locations of the fire incidents. The Extent of fire describes the severity of the fire incident, for example if it spreaded to another floor or remained in the area of origin. Lastly, the Estimated Dollar Loss showcases the financial consequences of each fire incident. 
 
 # Histogram
 
@@ -208,21 +198,12 @@ Previously, the author used two histograms to illustrate the distributions of es
 
 In addition, the geographical distribution of the outliers suggests that most fire incidents with large dollar losses occurred around central to southern part of Toronto, with the building status of "normal". It is coherent with the assumption that fire incidents from the kitchen or cooking area are more likely to occur in operating or occupied buildings.
 
-## Weaknesses and next steps
+# Weaknesses and next steps
 
-
-
-\newpage
-
-\appendix
-
-# Appendix {-}
-
-
-# Additional details
-
+Given the limitations and ethical considerations of the dataset as discussed previously, there are certain weaknesses associated with this study. Firstly, the dataset does not include any demographic information of the people involved with the fire incidents for confidentiality. The resulting weakness is that statisticians, policy setters, and decision makers cannot accurately use this information to pinpoint the people most in need for support as a result of fire incidents. Although people should not simply make decisions in terms of resource allocation, yet it would be helpful to understand the groups of people most affected by fire incidents and make sure they have the access to resources. The second weakness is that little information is included on why the buildings lack operating fire alarm systems. For instance, some buildings may be outdated in terms of fire alarm system maintenance, thus causing the system to malfunction when needed. In another scenario, the fire alarm system may be constantly causing issues, thus the resident turned it off, causing it to not function during an emergency. By having specific details on the causes of the absence of operating fire alarm system, people can come up with solutions to better put working fire alarm systems in place and further avoid preventable fire incidents. Therefore, to address the two weaknesses, some next steps could involve collecting demographic information on the people affected by fire incidents in Toronto. To remain confidentiality, the data collection process should be kept fully anonymous. Moreover, information on the causes of malfunctioning or absence of fire alarm systems can also be collected for further analysis and corresponding actions. The goal of the next steps is to turn data into useful insights to prevent fire incidents and better protect the community.
 
 \newpage
 
 
 # References
+\nocite{*}
